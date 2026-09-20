@@ -1,0 +1,19 @@
+name: daily-digest
+
+on:
+  schedule:
+    # KST 07:00
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger briefly digest
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
+        run: |
+          curl -fsS -X POST "${API_URL}/api/internal/run-digest" \
+            -H "x-internal-secret: ${INTERNAL_SECRET}"
