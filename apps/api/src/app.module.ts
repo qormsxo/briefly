@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { FeedsModule } from './feeds/feeds.module';
 import { HealthModule } from './health/health.module';
 import { KakaoModule } from './kakao/kakao.module';
 import { UsersModule } from './users/users.module';
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     KakaoModule,
+    FeedsModule,
     HealthModule,
   ],
 })
