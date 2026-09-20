@@ -2,6 +2,7 @@ import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { SESSION_COOKIE } from './auth.constants';
@@ -10,6 +11,7 @@ import { CurrentUser } from './current-user.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('auth')
+@Throttle({ default: { limit: 8, ttl: 60_000 } })
 @Controller('auth')
 export class AuthController {
   constructor(

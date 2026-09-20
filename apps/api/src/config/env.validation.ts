@@ -26,3 +26,10 @@ export const envValidationSchema = Joi.object({
 export function isProduction(nodeEnv?: string) {
   return nodeEnv === 'production';
 }
+
+export function parseOrigins(webOrigin: string): string[] {
+  return webOrigin
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}

@@ -1,19 +1,25 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { SESSION_COOKIE } from './auth/auth.constants';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { parseOrigins } from './config/env.validation';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  app.use(helmet());
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter());
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: process.env.WEB_ORIGIN ?? 'http://localhost:5173',
+    origin: parseOrigins(config.getOrThrow<string>('WEB_ORIGIN')),
     credentials: true,
   });
   app.useGlobalPipes(
@@ -59,7 +65,7 @@ async function bootstrap() {
     useGlobalPrefix: true,
   });
 
-  const port = Number(process.env.PORT ?? 3000);
+  const port = Number(config.get('PORT') ?? 3000);
   await app.listen(port);
 }
 

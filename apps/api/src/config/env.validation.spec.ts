@@ -1,4 +1,4 @@
-import { envValidationSchema, isProduction } from './env.validation';
+import { envValidationSchema, isProduction, parseOrigins } from './env.validation';
 
 describe('envValidationSchema', () => {
   const valid = {
@@ -30,5 +30,12 @@ describe('envValidationSchema', () => {
     expect(isProduction('production')).toBe(true);
     expect(isProduction('development')).toBe(false);
     expect(isProduction()).toBe(false);
+  });
+
+  it('parses origin whitelist', () => {
+    expect(parseOrigins('https://app.example.com, https://docs.example.com')).toEqual([
+      'https://app.example.com',
+      'https://docs.example.com',
+    ]);
   });
 });
