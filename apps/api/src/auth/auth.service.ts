@@ -14,6 +14,7 @@ import {
 } from './auth.constants';
 import { AuthUser, JwtPayload } from './auth.types';
 import { KakaoProfileResponse, KakaoTokenResponse } from './kakao.types';
+import { sessionCookieOptions } from './session-cookie';
 
 @Injectable()
 export class AuthService {
@@ -60,14 +61,11 @@ export class AuthService {
   }
 
   cookieOptions() {
-    const isProd = this.config.get('NODE_ENV') === 'production';
-    return {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
+    return sessionCookieOptions({
+      nodeEnv: this.config.get('NODE_ENV'),
+      webOrigin: this.config.getOrThrow('WEB_ORIGIN'),
+      redirectUri: this.config.getOrThrow('KAKAO_REDIRECT_URI'),
+    });
   }
 
   private async exchangeCode(code: string): Promise<KakaoTokenResponse> {

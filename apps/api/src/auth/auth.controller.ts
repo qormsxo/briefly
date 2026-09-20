@@ -49,7 +49,7 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: '세션 쿠키 삭제' })
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie(SESSION_COOKIE, { path: '/' });
+    res.clearCookie(SESSION_COOKIE, this.auth.cookieOptions());
     return { ok: true };
   }
 }
