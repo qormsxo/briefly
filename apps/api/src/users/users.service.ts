@@ -39,4 +39,18 @@ export class UsersService {
     }
     return this.users.save(this.users.create(input));
   }
+
+  saveKakaoTokens(
+    user: User,
+    tokens: {
+      kakaoAccessToken: string;
+      kakaoRefreshToken: string;
+      kakaoTokenExpiresAt: Date | null;
+    },
+  ) {
+    user.kakaoAccessToken = tokens.kakaoAccessToken;
+    user.kakaoRefreshToken = tokens.kakaoRefreshToken;
+    user.kakaoTokenExpiresAt = tokens.kakaoTokenExpiresAt;
+    return this.users.save(user);
+  }
 }
