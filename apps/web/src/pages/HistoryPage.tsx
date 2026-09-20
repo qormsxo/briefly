@@ -5,11 +5,6 @@ import { queryClient } from '../lib/query-client';
 
 export function HistoryPage() {
   const [page, setPage] = useState(1);
-  const history = useQuery({
-    queryKey: ['articles', page],
-    queryFn: () => listArticles(page),
-  });
-
   const ingestMutation = useMutation({
     mutationFn: ingestArticles,
     onSuccess: async () => {
@@ -17,8 +12,14 @@ export function HistoryPage() {
       await queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
   });
+  const history = useQuery({
+    queryKey: ['articles', page],
+    queryFn: () => listArticles(page),
+    refetchInterval: ingestMutation.isPending ? 1500 : false,
+  });
 
   const items = history.data?.items ?? [];
+  const ingestResult = ingestMutation.data;
 
   return (
     <section>
@@ -33,6 +34,21 @@ export function HistoryPage() {
           {ingestMutation.isPending ? '수집 중...' : '지금 수집'}
         </button>
       </div>
+      <p className="mt-2 text-xs text-slate-500">
+        수집이 끝나면, 버튼을 누른 시점 기준 24시간 안에 요약됐고 아직 안 보낸
+        글만 카카오톡으로 보냅니다.
+      </p>
+      {ingestMutation.isPending ? (
+        <p className="mt-2 text-sm text-slate-500">
+          요약이 끝나는 대로 아래에 추가됩니다.
+        </p>
+      ) : null}
+      {ingestResult && !ingestMutation.isPending ? (
+        <p className="mt-2 text-sm text-slate-600">
+          새로 요약 {ingestResult.count}건, 카카오톡 {ingestResult.sent}건
+          {ingestResult.kakaoError ? ` (발송 실패: ${ingestResult.kakaoError})` : ''}
+        </p>
+      ) : null}
 
       {history.isLoading ? (
         <p className="mt-6 text-sm text-slate-500">불러오는 중...</p>
@@ -47,6 +63,9 @@ export function HistoryPage() {
             key={article.id}
             className="rounded border border-slate-200 bg-white p-4"
           >
+            <p className="text-xs text-slate-500">
+              {article.feedTitle ?? article.feedUrl ?? '피드'}
+            </p>
             <a
               href={article.link}
               target="_blank"

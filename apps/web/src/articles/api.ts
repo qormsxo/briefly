@@ -7,6 +7,8 @@ export type Article = {
   summary: string;
   publishedAt: string | null;
   collectedAt: string;
+  feedTitle: string | null;
+  feedUrl: string | null;
 };
 
 export type ArticlePage = {
@@ -26,5 +28,8 @@ export function listArticles(page: number, limit = 10) {
 }
 
 export function ingestArticles() {
-  return http<{ count: number }>('/api/articles/ingest', { method: 'POST' });
+  return http<{ count: number; sent: number; kakaoError: string | null }>(
+    '/api/articles/ingest',
+    { method: 'POST' },
+  );
 }
