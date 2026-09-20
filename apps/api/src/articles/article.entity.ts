@@ -33,6 +33,9 @@ export class Article {
   @Column({ type: 'text' })
   summary: string;
 
+  @Column({ type: 'smallint', default: 5 })
+  interest: number;
+
   @Column({ type: 'timestamptz', nullable: true })
   publishedAt: Date | null;
 

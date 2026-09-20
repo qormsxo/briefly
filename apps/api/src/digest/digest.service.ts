@@ -2,15 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Article } from '../articles/article.entity';
 import { ArticleIngestService } from '../articles/article-ingest.service';
 import { ArticlesService } from '../articles/articles.service';
-import { KakaoFeedTemplate, KakaoTalkService } from '../kakao/kakao-talk.service';
+import { KakaoTalkService, KakaoTextTemplate } from '../kakao/kakao-talk.service';
 import { UsersService } from '../users/users.service';
 import { DigestLog } from './digest-log.entity';
+import { buildKakaoText, sortByInterest } from './kakao-text';
 
 const LOOKBACK_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_IMAGE =
-  'https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png';
 
 @Injectable()
 export class DigestService {
@@ -56,18 +56,21 @@ export class DigestService {
       return { sent: 0 };
     }
 
+    const outgoing = sortByInterest(unsent);
     try {
-      await this.talk.sendMemoToMe(user, this.buildFeed(unsent));
+      for (const article of outgoing) {
+        await this.talk.sendMemoToMe(user, this.buildText(article));
+      }
       await this.articles.markKakaoSent(unsent.map((article) => article.id));
       await this.logs.save(
         this.logs.create({
           userId,
           status: 'success',
-          articleCount: unsent.length,
+          articleCount: outgoing.length,
           errorMessage: null,
         }),
       );
-      return { sent: unsent.length };
+      return { sent: outgoing.length };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown';
       this.logger.warn(`브리핑 발송 실패 userId=${userId} reason=${message}`);
@@ -75,7 +78,7 @@ export class DigestService {
         this.logs.create({
           userId,
           status: 'failure',
-          articleCount: unsent.length,
+          articleCount: outgoing.length,
           errorMessage: message,
         }),
       );
@@ -83,31 +86,16 @@ export class DigestService {
     }
   }
 
-  private buildFeed(
-    articles: Array<{ title: string; summary: string; link: string }>,
-  ): KakaoFeedTemplate {
+  private buildText(article: Article): KakaoTextTemplate {
     const webOrigin = this.config.get('WEB_ORIGIN') ?? 'http://localhost:5173';
     const historyUrl = `${webOrigin}/history`;
-    const imageUrl = this.config.get('KAKAO_FEED_IMAGE_URL') ?? DEFAULT_IMAGE;
-    const description = articles
-      .map((article) => article.title)
-      .join(' / ')
-      .slice(0, 100);
+    const historyLink = { web_url: historyUrl, mobile_web_url: historyUrl };
 
     return {
-      object_type: 'feed',
-      content: {
-        title: `briefly 브리핑 · ${articles.length}건`,
-        description,
-        image_url: imageUrl,
-        link: { web_url: historyUrl, mobile_web_url: historyUrl },
-      },
-      buttons: [
-        {
-          title: '전체 요약 보기',
-          link: { web_url: historyUrl, mobile_web_url: historyUrl },
-        },
-      ],
+      object_type: 'text',
+      text: buildKakaoText(article.title, article.summary, article.link),
+      link: historyLink,
+      buttons: [{ title: '전체 요약 보기', link: historyLink }],
     };
   }
 }

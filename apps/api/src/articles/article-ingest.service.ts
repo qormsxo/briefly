@@ -77,6 +77,7 @@ export class ArticleIngestService {
             title: brief.title,
             link: item.link,
             summary: brief.summary,
+            interest: brief.interest,
             publishedAt: this.resolvePublishedAt(item),
             collectedAt: new Date(),
           }),

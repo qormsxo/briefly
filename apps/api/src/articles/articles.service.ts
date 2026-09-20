@@ -10,7 +10,7 @@ export class ArticlesService {
     private readonly articles: Repository<Article>,
   ) {}
 
-  listUnsentSince(userId: string, since: Date, take = 5) {
+  listUnsentSince(userId: string, since: Date, take = 20) {
     return this.articles.find({
       where: {
         userId,

@@ -8,6 +8,7 @@ const MAX_SOURCE_CHARS = 8_000;
 export type ArticleBrief = {
   title: string;
   summary: string;
+  interest: number;
 };
 
 @Injectable()
@@ -27,7 +28,8 @@ export class GeminiService {
     const prompt = [
       '아래 글을 한국어로 정리해.',
       'JSON만 출력하고 코드블록은 쓰지 마.',
-      '{"title":"한국어 제목","summary":"세 줄 요약. 줄바꿈으로 구분"}',
+      '{"title":"손이 가게 만드는 한국어 제목","summary":"세 줄 요약. 줄바꿈 구분. 전체 160자 이내","interest":8}',
+      'interest는 1-10. 자극적이고 화제성 있는 뉴스일수록 높게. 거짓 과장 금지.',
       '',
       `원제: ${title}`,
       '',
@@ -49,6 +51,7 @@ export class GeminiService {
       const parsed = JSON.parse(jsonText) as {
         title?: unknown;
         summary?: unknown;
+        interest?: unknown;
       };
       const translated =
         typeof parsed.title === 'string' ? parsed.title.trim() : '';
@@ -60,10 +63,19 @@ export class GeminiService {
       return {
         title: translated || fallbackTitle,
         summary,
+        interest: clampInterest(parsed.interest),
       };
     } catch {
       this.logger.warn('Gemini JSON 파싱 실패, 원제목 + 본문 사용');
-      return { title: fallbackTitle, summary: jsonText };
+      return { title: fallbackTitle, summary: jsonText, interest: 5 };
     }
   }
+}
+
+function clampInterest(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 5;
+  }
+  return Math.min(10, Math.max(1, Math.round(parsed)));
 }

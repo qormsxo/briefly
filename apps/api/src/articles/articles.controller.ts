@@ -30,7 +30,8 @@ export class ArticlesController {
 
   @Post('ingest')
   @ApiOperation({
-    summary: '수집/요약 후, 버튼 누른 시점 기준 24시간 미발송 요약을 카카오톡으로 전송',
+    summary:
+      '수집/요약 후, 미발송 요약을 글마다 카카오톡으로 보내고 원문 링크를 포함',
   })
   async ingestMine(@CurrentUser() user: AuthUser) {
     const pressedAt = new Date();

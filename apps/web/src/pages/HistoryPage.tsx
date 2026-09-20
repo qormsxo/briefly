@@ -35,8 +35,8 @@ export function HistoryPage() {
         </button>
       </div>
       <p className="mt-2 text-xs text-slate-500">
-        수집이 끝나면, 버튼을 누른 시점 기준 24시간 안에 요약됐고 아직 안 보낸
-        글만 카카오톡으로 보냅니다.
+        수집이 끝나면, 아직 안 보낸 요약을 글마다 카카오톡으로 보내고 원문
+        링크도 같이 넣습니다.
       </p>
       {ingestMutation.isPending ? (
         <p className="mt-2 text-sm text-slate-500">
