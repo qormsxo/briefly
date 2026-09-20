@@ -20,7 +20,10 @@ export async function withRetry<T>(
       return await fn();
     } catch (error) {
       lastError = error;
-      options.logger?.warn(`${operation} 실패 attempt=${attempt}/${retries}`);
+      const reason = error instanceof Error ? error.message : String(error);
+      options.logger?.warn(
+        `${operation} 실패 attempt=${attempt}/${retries} reason=${reason}`,
+      );
       if (attempt < retries) {
         await sleep(delayMs * attempt);
       }

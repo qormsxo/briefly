@@ -5,6 +5,11 @@ import { withRetry } from '../common/retry';
 
 const MAX_SOURCE_CHARS = 8_000;
 
+export type ArticleBrief = {
+  title: string;
+  summary: string;
+};
+
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
@@ -13,17 +18,18 @@ export class GeminiService {
 
   constructor(config: ConfigService) {
     this.client = new GoogleGenerativeAI(config.getOrThrow('GEMINI_API_KEY'));
-    this.modelName = config.get('GEMINI_MODEL') ?? 'gemini-2.0-flash';
+    this.modelName = config.get('GEMINI_MODEL') ?? 'gemini-3.6-flash';
   }
 
-  async summarize(title: string, source: string): Promise<string> {
+  async summarize(title: string, source: string): Promise<ArticleBrief> {
     const model = this.client.getGenerativeModel({ model: this.modelName });
     const clipped = source.slice(0, MAX_SOURCE_CHARS);
     const prompt = [
-      '다음 글을 한국어 3줄로 요약해.',
-      '불릿, 번호, 머리말 없이 줄바꿈으로만 구분해.',
+      '아래 글을 한국어로 정리해.',
+      'JSON만 출력하고 코드블록은 쓰지 마.',
+      '{"title":"한국어 제목","summary":"세 줄 요약. 줄바꿈으로 구분"}',
       '',
-      `제목: ${title}`,
+      `원제: ${title}`,
       '',
       clipped,
     ].join('\n');
@@ -34,10 +40,30 @@ export class GeminiService {
       { logger: this.logger },
     );
     const text = result.response.text().trim();
-    if (!text) {
-      this.logger.warn(`빈 요약 title=${title}`);
-      throw new Error('Gemini 요약 결과가 비어 있습니다');
+    return this.parseBrief(text, title);
+  }
+
+  private parseBrief(raw: string, fallbackTitle: string): ArticleBrief {
+    const jsonText = raw.replace(/^```(?:json)?\s*|\s*```$/g, '').trim();
+    try {
+      const parsed = JSON.parse(jsonText) as {
+        title?: unknown;
+        summary?: unknown;
+      };
+      const translated =
+        typeof parsed.title === 'string' ? parsed.title.trim() : '';
+      const summary =
+        typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
+      if (!summary) {
+        throw new Error('empty summary');
+      }
+      return {
+        title: translated || fallbackTitle,
+        summary,
+      };
+    } catch {
+      this.logger.warn('Gemini JSON 파싱 실패, 원제목 + 본문 사용');
+      return { title: fallbackTitle, summary: jsonText };
     }
-    return text;
   }
 }

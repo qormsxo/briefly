@@ -7,6 +7,8 @@ import { ParsedFeed, RssParserService } from '../rss/rss-parser.service';
 import { Article } from './article.entity';
 
 const LOOKBACK_MS = 24 * 60 * 60 * 1000;
+const MAX_ITEMS_PER_FEED = 5;
+const FALLBACK_ITEMS_PER_FEED = 3;
 
 @Injectable()
 export class ArticleIngestService {
@@ -44,15 +46,12 @@ export class ArticleIngestService {
         continue;
       }
 
-      for (const item of parsed.items) {
-        if (!item.link) {
-          continue;
-        }
-        const publishedAt = this.resolvePublishedAt(item);
-        if (publishedAt && publishedAt < since) {
-          continue;
-        }
+      const candidates = this.pickCandidates(parsed.items, since);
+      this.logger.log(
+        `피드 수집 url=${feed.url} candidates=${candidates.length}`,
+      );
 
+      for (const item of candidates) {
         const duplicate = await this.articles.findOneBy({
           feedId: feed.id,
           link: item.link,
@@ -63,9 +62,9 @@ export class ArticleIngestService {
 
         const source =
           item.contentSnippet || item.content || item.title || '';
-        let summary: string;
+        let brief;
         try {
-          summary = await this.gemini.summarize(item.title ?? '', source);
+          brief = await this.gemini.summarize(item.title ?? '', source);
         } catch {
           this.logger.warn(`요약 실패 link=${item.link}`);
           continue;
@@ -75,10 +74,10 @@ export class ArticleIngestService {
           this.articles.create({
             feedId: feed.id,
             userId: feed.userId,
-            title: item.title ?? '(제목 없음)',
+            title: brief.title,
             link: item.link,
-            summary,
-            publishedAt,
+            summary: brief.summary,
+            publishedAt: this.resolvePublishedAt(item),
             collectedAt: new Date(),
           }),
         );
@@ -90,6 +89,21 @@ export class ArticleIngestService {
       `수집 완료 userId=${userId ?? 'all'} saved=${saved.length}`,
     );
     return saved;
+  }
+
+  private pickCandidates(
+    items: ParsedFeed['items'],
+    since: Date,
+  ): ParsedFeed['items'] {
+    const withLink = items.filter((item) => Boolean(item.link));
+    const recent = withLink.filter((item) => {
+      const publishedAt = this.resolvePublishedAt(item);
+      return !publishedAt || publishedAt >= since;
+    });
+    if (recent.length > 0) {
+      return recent.slice(0, MAX_ITEMS_PER_FEED);
+    }
+    return withLink.slice(0, FALLBACK_ITEMS_PER_FEED);
   }
 
   private resolvePublishedAt(item: ParsedFeed['items'][number]) {
