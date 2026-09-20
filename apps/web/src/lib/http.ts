@@ -20,8 +20,7 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    throw new ApiError(response.status, body || response.statusText);
+    throw new ApiError(response.status, await readErrorMessage(response));
   }
 
   if (response.status === 204) {
@@ -29,4 +28,20 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+async function readErrorMessage(response: Response) {
+  const body = await response.text();
+  try {
+    const json = JSON.parse(body) as { message?: string | string[] };
+    if (Array.isArray(json.message)) {
+      return json.message.join(', ');
+    }
+    if (json.message) {
+      return json.message;
+    }
+  } catch {
+    // text/plain
+  }
+  return body || response.statusText;
 }
