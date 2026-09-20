@@ -1,0 +1,11 @@
+{
+  "name": "@briefly/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo api workspace is not set up yet",
+    "build": "echo api workspace is not set up yet",
+    "test": "echo api workspace is not set up yet",
+    "lint": "echo api workspace is not set up yet"
+  }
+}
