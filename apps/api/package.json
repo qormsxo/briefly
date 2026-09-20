@@ -12,9 +12,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "typeorm": "typeorm-ts-node-commonjs -d src/data-source.ts",
-    "migration:generate": "pnpm typeorm migration:generate src/migrations/Generated",
-    "migration:run": "pnpm typeorm migration:run",
-    "migration:revert": "pnpm typeorm migration:revert"
+    "migration:generate": "corepack pnpm typeorm migration:generate src/migrations/Generated",
+    "migration:run": "corepack pnpm typeorm migration:run",
+    "migration:revert": "corepack pnpm typeorm migration:revert"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
