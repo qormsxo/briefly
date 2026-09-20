@@ -8,10 +8,12 @@ import { AppModule } from './app.module';
 import { SESSION_COOKIE } from './auth/auth.constants';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { parseOrigins } from './config/env.validation';
+import { nestLogLevels } from './config/logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService);
+  app.useLogger(nestLogLevels(config.get('LOG_LEVEL')));
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.use(helmet());
   app.use(cookieParser());
@@ -33,7 +35,7 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('briefly API')
+    .setTitle('feed-briefly API')
     .setDescription(
       [
         '개인용 RSS 요약 브리핑 API.',

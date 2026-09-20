@@ -1,13 +1,13 @@
 {
-  "name": "briefly",
+  "name": "feed-briefly",
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
-    "dev:api": "pnpm --filter @briefly/api dev",
-    "dev:web": "pnpm --filter @briefly/web dev",
+    "dev:api": "pnpm --filter @feed-briefly/api dev",
+    "dev:web": "pnpm --filter @feed-briefly/web dev",
     "build": "pnpm -r run build",
-    "test": "pnpm --filter @briefly/api test",
+    "test": "pnpm --filter @feed-briefly/api test",
     "lint": "pnpm -r run lint"
   },
   "engines": {

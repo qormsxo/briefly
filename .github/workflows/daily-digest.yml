@@ -10,7 +10,7 @@ jobs:
   run-digest:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger briefly digest
+      - name: Trigger feed-briefly digest
         env:
           API_URL: ${{ secrets.API_URL }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}

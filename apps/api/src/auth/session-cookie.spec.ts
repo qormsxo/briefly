@@ -15,8 +15,8 @@ describe('sessionCookieOptions', () => {
     expect(
       sessionCookieOptions({
         nodeEnv: 'production',
-        webOrigin: 'https://briefly.vercel.app',
-        redirectUri: 'https://briefly-api.fly.dev/api/auth/kakao/callback',
+        webOrigin: 'https://feed-briefly.vercel.app',
+        redirectUri: 'https://feed-briefly-api.fly.dev/api/auth/kakao/callback',
       }),
     ).toMatchObject({ httpOnly: true, secure: true, sameSite: 'none' });
   });
@@ -25,8 +25,8 @@ describe('sessionCookieOptions', () => {
     expect(
       sessionCookieOptions({
         nodeEnv: 'production',
-        webOrigin: 'https://briefly.example.com',
-        redirectUri: 'https://briefly.example.com/api/auth/kakao/callback',
+        webOrigin: 'https://feed-briefly.example.com',
+        redirectUri: 'https://feed-briefly.example.com/api/auth/kakao/callback',
       }),
     ).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax' });
   });

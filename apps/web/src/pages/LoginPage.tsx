@@ -12,7 +12,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
       <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8">
-        <h1 className="text-xl font-semibold">briefly</h1>
+        <h1 className="text-xl font-semibold">feed-briefly</h1>
         <p className="mt-2 text-sm text-slate-600">
           RSS를 요약해 매일 아침 카카오톡으로 받습니다.
         </p>

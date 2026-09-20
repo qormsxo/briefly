@@ -7,7 +7,11 @@ export const envValidationSchema = Joi.object({
   PORT: Joi.number().port().default(3000),
   LOG_LEVEL: Joi.string()
     .valid('error', 'warn', 'log', 'debug', 'verbose')
-    .default('log'),
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.string().default('warn'),
+      otherwise: Joi.string().default('debug'),
+    }),
   WEB_ORIGIN: Joi.string().uri().required(),
   DATABASE_URL: Joi.string().min(1).required(),
   DATABASE_SSL: Joi.string().valid('true', 'false').default('false'),

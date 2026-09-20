@@ -1,4 +1,4 @@
-# briefly
+# feed-briefly
 
 등록한 RSS 피드를 매일 수집하고, Gemini로 3줄 요약한 뒤 카카오톡 **나에게 보내기**로 아침 브리핑을 받는 개인용 뉴스 요약 서비스다.
 
@@ -104,5 +104,5 @@ pnpm dev:web
 - Swagger: http://localhost:3000/docs
 
 ```bash
-pnpm --filter @briefly/api test
+pnpm --filter @feed-briefly/api test
 ```

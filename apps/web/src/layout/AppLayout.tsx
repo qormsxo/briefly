@@ -19,7 +19,7 @@ export function AppLayout() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
         <Link to="/" className="text-lg font-semibold tracking-tight">
-          briefly
+          feed-briefly
         </Link>
         <nav className="flex items-center gap-4 text-sm">
           <Link to="/" className="text-slate-600 hover:text-slate-900">
