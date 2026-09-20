@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SESSION_COOKIE } from '../auth/auth.constants';
 import { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -18,7 +19,7 @@ import { UpdateFeedDto } from './dto/update-feed.dto';
 import { FeedsService } from './feeds.service';
 
 @ApiTags('feeds')
-@ApiCookieAuth()
+@ApiCookieAuth(SESSION_COOKIE)
 @UseGuards(JwtAuthGuard)
 @Controller('feeds')
 export class FeedsController {

@@ -1,9 +1,10 @@
 import { Controller, Post, UseGuards } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { DigestService } from './digest.service';
 import { InternalSecretGuard } from './internal-secret.guard';
 
 @ApiTags('internal')
+@ApiSecurity('internal-secret')
 @Controller('internal')
 export class DigestController {
   constructor(private readonly digest: DigestService) {}
