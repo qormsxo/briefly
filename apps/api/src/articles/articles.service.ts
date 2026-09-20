@@ -17,4 +17,20 @@ export class ArticlesService {
       take,
     });
   }
+
+  async paginateByUser(userId: string, page: number, limit: number) {
+    const [items, total] = await this.articles.findAndCount({
+      where: { userId },
+      order: { collectedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return {
+      items,
+      page,
+      limit,
+      total,
+      hasMore: page * limit < total,
+    };
+  }
 }
