@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import Parser from 'rss-parser';
+import { withRetry } from '../common/retry';
 
 export type ParsedFeed = {
   title?: string;
@@ -19,7 +20,11 @@ export class RssParserService {
   private readonly parser = new Parser({ timeout: 10_000 });
 
   async parse(url: string): Promise<ParsedFeed> {
-    return this.parser.parseURL(url);
+    return withRetry(
+      `RSS 파싱 url=${url}`,
+      () => this.parser.parseURL(url),
+      { logger: this.logger },
+    );
   }
 
   async assertValidFeed(url: string): Promise<ParsedFeed> {

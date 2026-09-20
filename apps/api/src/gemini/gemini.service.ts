@@ -1,6 +1,7 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { withRetry } from '../common/retry';
 
 const MAX_SOURCE_CHARS = 8_000;
 
@@ -27,7 +28,11 @@ export class GeminiService {
       clipped,
     ].join('\n');
 
-    const result = await model.generateContent(prompt);
+    const result = await withRetry(
+      `Gemini 요약 title=${title}`,
+      () => model.generateContent(prompt),
+      { logger: this.logger },
+    );
     const text = result.response.text().trim();
     if (!text) {
       this.logger.warn(`빈 요약 title=${title}`);
