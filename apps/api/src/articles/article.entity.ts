@@ -39,6 +39,9 @@ export class Article {
   @Column({ type: 'timestamptz' })
   collectedAt: Date;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  kakaoSentAt: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 }

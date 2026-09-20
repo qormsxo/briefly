@@ -34,44 +34,53 @@ export class DigestService {
       [];
 
     for (const user of users) {
-      const recent = await this.articles.listCollectedSince(user.id, since);
-      try {
-        if (recent.length > 0) {
-          await this.talk.sendMemoToMe(user, this.buildFeed(recent));
-        }
-        await this.logs.save(
-          this.logs.create({
-            userId: user.id,
-            status: 'success',
-            articleCount: recent.length,
-            errorMessage: null,
-          }),
-        );
-        results.push({
-          userId: user.id,
-          status: 'success',
-          articleCount: recent.length,
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'unknown';
-        this.logger.warn(`브리핑 발송 실패 userId=${user.id} reason=${message}`);
-        await this.logs.save(
-          this.logs.create({
-            userId: user.id,
-            status: 'failure',
-            articleCount: recent.length,
-            errorMessage: message,
-          }),
-        );
-        results.push({
-          userId: user.id,
-          status: 'failure',
-          articleCount: recent.length,
-        });
-      }
+      const result = await this.sendUnsentForUser(user.id, since);
+      results.push({
+        userId: user.id,
+        status: result.error ? 'failure' : 'success',
+        articleCount: result.sent,
+      });
     }
 
     return { ingested: ingested.length, results };
+  }
+
+  async sendUnsentForUser(userId: string, since: Date) {
+    const user = await this.users.findById(userId);
+    if (!user) {
+      return { sent: 0, error: '사용자를 찾을 수 없습니다' };
+    }
+
+    const unsent = await this.articles.listUnsentSince(userId, since);
+    if (unsent.length === 0) {
+      return { sent: 0 };
+    }
+
+    try {
+      await this.talk.sendMemoToMe(user, this.buildFeed(unsent));
+      await this.articles.markKakaoSent(unsent.map((article) => article.id));
+      await this.logs.save(
+        this.logs.create({
+          userId,
+          status: 'success',
+          articleCount: unsent.length,
+          errorMessage: null,
+        }),
+      );
+      return { sent: unsent.length };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`브리핑 발송 실패 userId=${userId} reason=${message}`);
+      await this.logs.save(
+        this.logs.create({
+          userId,
+          status: 'failure',
+          articleCount: unsent.length,
+          errorMessage: message,
+        }),
+      );
+      return { sent: 0, error: message };
+    }
   }
 
   private buildFeed(

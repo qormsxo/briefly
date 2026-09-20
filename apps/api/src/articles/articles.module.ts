@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DigestModule } from '../digest/digest.module';
 import { FeedsModule } from '../feeds/feeds.module';
 import { GeminiModule } from '../gemini/gemini.module';
 import { RssModule } from '../rss/rss.module';
@@ -14,6 +15,7 @@ import { ArticlesService } from './articles.service';
     FeedsModule,
     RssModule,
     GeminiModule,
+    forwardRef(() => DigestModule),
   ],
   controllers: [ArticlesController],
   providers: [ArticleIngestService, ArticlesService],

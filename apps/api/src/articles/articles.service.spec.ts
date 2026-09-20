@@ -17,9 +17,18 @@ describe('ArticlesService', () => {
   });
 
   it('paginates and reports hasMore', async () => {
-    articles.findAndCount.mockResolvedValue([[{ id: 'a1' }, { id: 'a2' }], 5]);
-    await expect(service.paginateByUser('u1', 1, 2)).resolves.toEqual({
-      items: [{ id: 'a1' }, { id: 'a2' }],
+    articles.findAndCount.mockResolvedValue([
+      [
+        { id: 'a1', feed: { title: 'HN', url: 'https://hnrss.org/frontpage' } },
+        { id: 'a2', feed: { title: 'DEV', url: 'https://dev.to/feed' } },
+      ],
+      5,
+    ]);
+    await expect(service.paginateByUser('u1', 1, 2)).resolves.toMatchObject({
+      items: [
+        { id: 'a1', feedTitle: 'HN' },
+        { id: 'a2', feedTitle: 'DEV' },
+      ],
       page: 1,
       limit: 2,
       total: 5,

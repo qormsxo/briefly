@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArticlesModule } from '../articles/articles.module';
 import { KakaoModule } from '../kakao/kakao.module';
@@ -11,11 +11,12 @@ import { InternalSecretGuard } from './internal-secret.guard';
 @Module({
   imports: [
     TypeOrmModule.forFeature([DigestLog]),
-    ArticlesModule,
+    forwardRef(() => ArticlesModule),
     UsersModule,
     KakaoModule,
   ],
   controllers: [DigestController],
   providers: [DigestService, InternalSecretGuard],
+  exports: [DigestService],
 })
 export class DigestModule {}
