@@ -5,6 +5,7 @@ coverage
 .env
 .env.local
 .env.*.local
+.env.production
 DEV_NOTES.md
 DEPLOY.md
 *.log
@@ -14,3 +15,4 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.tsbuildinfo
+.vercel

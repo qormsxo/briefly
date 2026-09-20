@@ -1,0 +1,13 @@
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+node_modules
+**/node_modules
+**/dist
+apps/web
+DEV_NOTES.md
+DEPLOY.md
+*.md
+!README.md
