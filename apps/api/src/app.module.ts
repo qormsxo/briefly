@@ -5,6 +5,7 @@ import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { envValidationSchema } from './config/env.validation';
+import { typeormNestOptions } from './config/typeorm.config';
 import { DigestModule } from './digest/digest.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { HealthModule } from './health/health.module';
@@ -21,16 +22,12 @@ import { UsersModule } from './users/users.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres' as const,
-        url: config.getOrThrow<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: config.get('NODE_ENV') !== 'production',
-        ssl:
-          config.get('DATABASE_SSL') === 'true'
-            ? { rejectUnauthorized: false }
-            : false,
-      }),
+      useFactory: (config: ConfigService) =>
+        typeormNestOptions({
+          NODE_ENV: config.get('NODE_ENV'),
+          DATABASE_URL: config.getOrThrow<string>('DATABASE_URL'),
+          DATABASE_SSL: config.get('DATABASE_SSL'),
+        }),
     }),
     CommonModule,
     UsersModule,
