@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { DigestModule } from './digest/digest.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { HealthModule } from './health/health.module';
 import { KakaoModule } from './kakao/kakao.module';
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module';
     KakaoModule,
     FeedsModule,
     ArticlesModule,
+    DigestModule,
     HealthModule,
   ],
 })

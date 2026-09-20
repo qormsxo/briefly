@@ -27,6 +27,10 @@ export class UsersService {
     return this.users.findOneBy({ kakaoId });
   }
 
+  findAll() {
+    return this.users.find();
+  }
+
   async upsertFromKakao(input: KakaoUserUpsert) {
     const existing = await this.findByKakaoId(input.kakaoId);
     if (existing) {
