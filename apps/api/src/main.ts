@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -17,7 +17,9 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: 'health', method: RequestMethod.GET }],
+  });
   app.enableCors({
     origin: parseOrigins(config.getOrThrow<string>('WEB_ORIGIN')),
     credentials: true,
@@ -66,7 +68,23 @@ async function bootstrap() {
   });
 
   const port = Number(config.get('PORT') ?? 3000);
+  app.enableShutdownHooks();
   await app.listen(port);
 }
 
+function registerProcessHandlers() {
+  const logger = new Logger('Process');
+  process.on('unhandledRejection', (reason) => {
+    logger.error(
+      'unhandledRejection',
+      reason instanceof Error ? reason.stack : String(reason),
+    );
+  });
+  process.on('uncaughtException', (error) => {
+    logger.error('uncaughtException', error.stack);
+    process.exit(1);
+  });
+}
+
+registerProcessHandlers();
 void bootstrap();
