@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { FeedsModule } from './feeds/feeds.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     KakaoModule,
     FeedsModule,
+    ArticlesModule,
     HealthModule,
   ],
 })

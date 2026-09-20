@@ -40,6 +40,10 @@ export class FeedsService {
     });
   }
 
+  listAll() {
+    return this.feeds.find({ order: { createdAt: 'ASC' } });
+  }
+
   async update(userId: string, feedId: string, dto: UpdateFeedDto) {
     const feed = await this.findOwned(userId, feedId);
     if (dto.url && dto.url !== feed.url) {
