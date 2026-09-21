@@ -2,14 +2,25 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(import.meta.dirname, 'src'),
+export default defineConfig(({ mode }) => {
+  const apiUrl =
+    process.env.VITE_API_URL ||
+    (mode === 'production'
+      ? 'https://feed-briefly.fly.dev'
+      : 'http://localhost:3000');
+
+  return {
+    plugins: [react()],
+    define: {
+      'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl),
     },
-  },
-  server: {
-    port: 5173,
-  },
+    resolve: {
+      alias: {
+        '@': path.resolve(import.meta.dirname, 'src'),
+      },
+    },
+    server: {
+      port: 5173,
+    },
+  };
 });
