@@ -1,4 +1,4 @@
-import { withRetry } from './retry';
+import { isDailyQuotaError, withRetry } from './retry';
 
 describe('withRetry', () => {
   it('returns on first success', async () => {
@@ -17,6 +17,21 @@ describe('withRetry', () => {
       'ok',
     );
     expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not retry a daily quota error', async () => {
+    const error = new Error(
+      '[429 Too Many Requests] Quota exceeded for metric: generate_content_free_tier_requests',
+    );
+    const fn = jest.fn(() => Promise.reject(error));
+    await expect(
+      withRetry('op', fn, {
+        delayMs: 1,
+        retries: 3,
+        retryOn: (caught) => !isDailyQuotaError(caught),
+      }),
+    ).rejects.toThrow('429');
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('throws the last error after exhausting retries', async () => {

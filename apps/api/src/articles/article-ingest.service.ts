@@ -8,7 +8,7 @@ import {
 import { TECH_THEME_ID } from '../crawl/news-themes';
 import { UserThemesService } from '../crawl/user-themes.service';
 import { FeedsService } from '../feeds/feeds.service';
-import { GeminiService } from '../gemini/gemini.service';
+import { ArticleBrief, GeminiService } from '../gemini/gemini.service';
 import { ParsedFeed, RssParserService } from '../rss/rss-parser.service';
 import { Article } from './article.entity';
 
@@ -109,6 +109,9 @@ export class ArticleIngestService {
       rowsByUser.set(row.userId, rows);
     }
 
+    const pending: PendingBrief[] = [];
+    const seen = new Set<string>();
+
     for (const rows of rowsByUser.values()) {
       const quotas = briefsPerTheme(rows.length, MAX_BRIEFS_PER_USER);
       for (let index = 0; index < rows.length; index += 1) {
@@ -142,34 +145,50 @@ export class ArticleIngestService {
           `뉴스 테마 수집 theme=${row.theme} candidates=${fresh.length} quota=${room} picked=${picked.length}`,
         );
 
-        let summarized = 0;
         for (const page of picked) {
-          if (summarized >= room) {
-            break;
-          }
-
-          let brief;
-          try {
-            brief = await this.gemini.summarize(page.title, page.text);
-          } catch (error) {
-            summarized += 1;
-            const reason = error instanceof Error ? error.message : String(error);
-            this.logger.warn(`요약 실패 link=${page.link} reason=${reason}`);
+          const key = `${row.userId}\0${page.link}`;
+          if (seen.has(key)) {
             continue;
           }
+          seen.add(key);
+          pending.push({ page, userId: row.userId, theme: row.theme });
+        }
+      }
+    }
 
-          summarized += 1;
+    if (pending.length > 0) {
+      let briefs: (ArticleBrief | null)[] | null = null;
+      try {
+        briefs = await this.gemini.summarizeMany(
+          pending.map((item) => ({
+            title: item.page.title,
+            source: item.page.text,
+          })),
+        );
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`요약 실패 count=${pending.length} reason=${reason}`);
+      }
+
+      if (briefs) {
+        for (let index = 0; index < pending.length; index += 1) {
+          const brief = briefs[index];
+          const item = pending[index];
+          if (!brief) {
+            this.logger.warn(`요약 누락 link=${item.page.link}`);
+            continue;
+          }
           const article = await this.articles.save(
             this.articles.create({
-              feedId: page.feedId,
+              feedId: item.page.feedId,
               crawlSourceId: null,
-              theme: row.theme,
-              userId: row.userId,
+              theme: item.theme,
+              userId: item.userId,
               title: brief.title,
-              link: page.link,
+              link: item.page.link,
               summary: brief.summary,
               interest: brief.interest,
-              publishedAt: page.publishedAt,
+              publishedAt: item.page.publishedAt,
               collectedAt: new Date(),
             }),
           );
@@ -293,6 +312,12 @@ export class ArticleIngestService {
 
 type CollectedPage = CrawledPage & {
   feedId: string | null;
+};
+
+type PendingBrief = {
+  page: CollectedPage;
+  userId: string;
+  theme: string;
 };
 
 export function briefsPerTheme(themeCount: number, maxBriefs: number) {

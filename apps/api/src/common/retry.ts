@@ -4,7 +4,16 @@ export type RetryOptions = {
   retries?: number;
   delayMs?: number;
   logger?: Logger;
+  retryOn?: (error: unknown) => boolean;
 };
+
+export function isDailyQuotaError(error: unknown): boolean {
+  if (statusOf(error) === 429) {
+    return true;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('[429') || message.includes('Quota exceeded');
+}
 
 export async function withRetry<T>(
   operation: string,
@@ -21,16 +30,27 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error;
       const reason = error instanceof Error ? error.message : String(error);
+      const retry =
+        attempt < retries && (options.retryOn?.(error) ?? true);
       options.logger?.warn(
         `${operation} 실패 attempt=${attempt}/${retries} reason=${reason}`,
       );
-      if (attempt < retries) {
-        await sleep(delayMs * attempt);
+      if (!retry) {
+        break;
       }
+      await sleep(delayMs * attempt);
     }
   }
 
   throw lastError;
+}
+
+function statusOf(error: unknown): number | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined;
+  }
+  const status = (error as { status?: unknown }).status;
+  return typeof status === 'number' ? status : undefined;
 }
 
 function sleep(ms: number) {
