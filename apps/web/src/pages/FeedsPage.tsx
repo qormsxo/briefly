@@ -4,6 +4,7 @@ import { ApiError } from '../lib/http';
 import { queryClient } from '../lib/query-client';
 import { createFeed, deleteFeed, listFeeds } from '../feeds/api';
 
+// 화면은 App.tsx 라우트에서 빼 두었다. 다시 켤 때는 그 주석과 상단 피드 링크를 푼다.
 export function FeedsPage() {
   const [url, setUrl] = useState('');
   const feeds = useQuery({ queryKey: ['feeds'], queryFn: listFeeds });

@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CrawlSourcesModule } from '../crawl/crawl-sources.module';
 import { DigestModule } from '../digest/digest.module';
 import { FeedsModule } from '../feeds/feeds.module';
 import { GeminiModule } from '../gemini/gemini.module';
@@ -13,6 +14,7 @@ import { ArticlesService } from './articles.service';
   imports: [
     TypeOrmModule.forFeature([Article]),
     FeedsModule,
+    CrawlSourcesModule,
     RssModule,
     GeminiModule,
     forwardRef(() => DigestModule),

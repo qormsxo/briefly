@@ -9,6 +9,7 @@ export type Article = {
   collectedAt: string;
   feedTitle: string | null;
   feedUrl: string | null;
+  theme: string | null;
 };
 
 export type ArticlePage = {

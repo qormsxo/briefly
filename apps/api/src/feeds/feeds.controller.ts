@@ -18,6 +18,9 @@ import { CreateFeedDto } from './dto/create-feed.dto';
 import { UpdateFeedDto } from './dto/update-feed.dto';
 import { FeedsService } from './feeds.service';
 
+// FeedsModule이 이 컨트롤러를 등록하지 않는다. 등록/수정/삭제 API는 잠시 꺼 둔 상태다.
+// 이미 저장된 feeds 행은 IT/과학 테마 수집에서만 읽는다.
+
 @ApiTags('feeds')
 @ApiCookieAuth(SESSION_COOKIE)
 @UseGuards(JwtAuthGuard)

@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
+import { CrawlSourcesModule } from './crawl/crawl-sources.module';
 import { CommonModule } from './common/common.module';
 import { envValidationSchema } from './config/env.validation';
 import { typeormNestOptions } from './config/typeorm.config';
@@ -37,6 +38,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     KakaoModule,
     FeedsModule,
+    CrawlSourcesModule,
     ArticlesModule,
     DigestModule,
     HealthModule,

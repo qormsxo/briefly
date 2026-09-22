@@ -22,8 +22,13 @@ export function AppLayout() {
           feed-briefly
         </Link>
         <nav className="flex items-center gap-4 text-sm">
-          <Link to="/" className="text-slate-600 hover:text-slate-900">
+          {/* RSS 피드 화면은 잠시 비활성화. App.tsx의 /feeds 라우트 주석과 같이 켠다.
+          <Link to="/feeds" className="text-slate-600 hover:text-slate-900">
             피드
+          </Link>
+          */}
+          <Link to="/themes" className="text-slate-600 hover:text-slate-900">
+            테마
           </Link>
           <Link to="/history" className="text-slate-600 hover:text-slate-900">
             히스토리

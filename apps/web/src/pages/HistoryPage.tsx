@@ -64,7 +64,9 @@ export function HistoryPage() {
             className="rounded border border-slate-200 bg-white p-4"
           >
             <p className="text-xs text-slate-500">
-              {article.feedTitle ?? article.feedUrl ?? '피드'}
+              {article.theme
+                ? article.feedTitle ?? article.theme
+                : article.feedTitle ?? article.feedUrl ?? '피드'}
             </p>
             <a
               href={article.link}

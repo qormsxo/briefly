@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, MoreThanOrEqual, Repository } from 'typeorm';
+import { newsThemeLabel } from '../crawl/news-themes';
 import { Article } from './article.entity';
 
 @Injectable()
@@ -32,7 +33,7 @@ export class ArticlesService {
   async paginateByUser(userId: string, page: number, limit: number) {
     const [rows, total] = await this.articles.findAndCount({
       where: { userId },
-      relations: { feed: true },
+      relations: { feed: true, crawlSource: true },
       order: { collectedAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -45,8 +46,17 @@ export class ArticlesService {
         summary: row.summary,
         publishedAt: row.publishedAt,
         collectedAt: row.collectedAt,
-        feedTitle: row.feed?.title ?? null,
-        feedUrl: row.feed?.url ?? null,
+        feedTitle:
+          row.feed?.title ??
+          (row.theme
+            ? `네이버·다음·구글 · ${newsThemeLabel(row.theme)}`
+            : row.crawlSource
+              ? `${row.crawlSource.theme} · ${row.crawlSource.title ?? row.crawlSource.url}`
+              : null),
+        feedUrl: row.feed?.url ?? row.crawlSource?.url ?? row.link,
+        theme: row.theme
+          ? newsThemeLabel(row.theme)
+          : row.crawlSource?.theme ?? null,
       })),
       page,
       limit,
