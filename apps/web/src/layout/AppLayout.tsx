@@ -16,30 +16,32 @@ export function AppLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
-        <Link to="/" className="text-lg font-semibold tracking-tight">
+    <div className="min-h-screen bg-[#0F1218] text-zinc-100">
+      <header className="sticky top-0 z-10 border-b border-zinc-800 bg-[#0F1218]/90 backdrop-blur-md">
+        <div className="flex h-14 items-center justify-between px-6 lg:px-8">
+        <Link to="/" className="text-[15px] font-semibold tracking-tight">
           feed-briefly
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-3 text-[13px]">
           {/* RSS 피드 화면은 잠시 비활성화. App.tsx의 /feeds 라우트 주석과 같이 켠다.
           <Link to="/feeds" className="text-slate-600 hover:text-slate-900">
             피드
           </Link>
           */}
-          <span className="text-slate-400">
+          <span className="text-zinc-200">
             {auth.data?.nickname ?? '사용자'}
           </span>
           <button
             type="button"
-            className="rounded border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100"
+            className="text-zinc-200 hover:text-white"
             onClick={() => logoutMutation.mutate()}
           >
             로그아웃
           </button>
         </nav>
+        </div>
       </header>
-      <main className="mx-auto max-w-2xl px-6 py-8">
+      <main className="px-6 py-6 lg:px-8">
         <Outlet />
       </main>
     </div>

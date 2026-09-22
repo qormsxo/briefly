@@ -49,108 +49,102 @@ export function HistoryPage() {
 
   return (
     <section>
-      <h2 className="text-base font-semibold">관심 뉴스</h2>
-      <p className="mt-2 text-sm text-slate-600">
-        보고 싶은 분야만 고르면 됩니다. 네이버, 다음, 구글 뉴스에서 찾아서
-        요약합니다.
-      </p>
-      {themes.isLoading ? (
-        <p className="mt-6 text-sm text-slate-500">분야를 불러오는 중...</p>
-      ) : null}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {themes.data?.catalog.map((theme) => {
-          const on = selected.has(theme.id);
-          return (
-            <button
-              key={theme.id}
-              type="button"
-              disabled={saveMutation.isPending}
-              className={`rounded-full border px-3 py-1.5 text-sm disabled:opacity-60 ${
-                on
-                  ? 'border-slate-900 bg-slate-900 text-white'
-                  : 'border-slate-300 text-slate-700 hover:bg-slate-100'
-              }`}
-              onClick={() => toggle(theme.id)}
-            >
-              {theme.label}
-            </button>
-          );
-        })}
-      </div>
-      {saveError ? (
-        <p className="mt-3 text-sm text-red-600">{saveError}</p>
-      ) : null}
-      {selected.size === 0 && themes.data ? (
-        <p className="mt-4 text-sm text-slate-500">
-          아직 고른 분야가 없습니다. 하나 이상 선택하세요.
-        </p>
-      ) : null}
-
-      <div className="mt-10 flex items-center justify-between">
-        <h2 className="text-base font-semibold">요약 히스토리</h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          {themes.isLoading ? (
+            <p className="text-sm text-zinc-300">분야를 불러오는 중...</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {themes.data?.catalog.map((theme) => {
+                const on = selected.has(theme.id);
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    disabled={saveMutation.isPending}
+                    className={`rounded-lg px-2.5 py-1 text-[13px] font-medium disabled:opacity-60 ${
+                      on
+                        ? 'bg-teal-500 text-black'
+                        : 'bg-zinc-900 text-zinc-300 ring-1 ring-zinc-800 hover:text-white'
+                    }`}
+                    onClick={() => toggle(theme.id)}
+                  >
+                    {theme.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {saveError ? (
+            <p className="mt-3 text-sm text-red-400">{saveError}</p>
+          ) : null}
+          {selected.size === 0 && themes.data ? (
+            <p className="mt-3 text-[13px] text-zinc-300">
+              분야를 하나 이상 고르면 그 뉴스를 모읍니다.
+            </p>
+          ) : null}
+        </div>
         <button
           type="button"
           disabled={ingestMutation.isPending}
-          className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+          className="h-9 shrink-0 rounded-lg bg-teal-500 px-3.5 text-[13px] font-medium text-black disabled:opacity-50"
           onClick={() => ingestMutation.mutate()}
         >
-          {ingestMutation.isPending ? '수집 중...' : '지금 수집'}
+          {ingestMutation.isPending ? '수집 중' : '지금 수집'}
         </button>
       </div>
-      <p className="mt-2 text-xs text-slate-500">
-        수집이 끝나면, 아직 안 보낸 요약을 글마다 카카오톡으로 보내고 원문
-        링크도 같이 넣습니다.
-      </p>
+
       {ingestMutation.isPending ? (
-        <p className="mt-2 text-sm text-slate-500">
-          요약이 끝나는 대로 아래에 추가됩니다.
+        <p className="mt-6 text-sm text-zinc-300">
+          요약이 끝나는 대로 아래에 추가됩니다. 끝나면 카카오톡으로도 보냅니다.
         </p>
       ) : null}
       {ingestResult && !ingestMutation.isPending ? (
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-6 text-sm text-zinc-300">
           새로 요약 {ingestResult.count}건, 카카오톡 {ingestResult.sent}건
           {ingestResult.kakaoError ? ` (발송 실패: ${ingestResult.kakaoError})` : ''}
         </p>
       ) : null}
 
       {history.isLoading ? (
-        <p className="mt-6 text-sm text-slate-500">불러오는 중...</p>
+        <p className="mt-8 text-sm text-zinc-300">불러오는 중...</p>
       ) : null}
       {history.data && items.length === 0 ? (
-        <p className="mt-6 text-sm text-slate-500">아직 요약이 없습니다.</p>
+        <p className="mt-8 text-sm text-zinc-300">아직 요약이 없습니다.</p>
       ) : null}
 
-      <ul className="mt-6 space-y-4">
+      <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((article) => (
-          <li
-            key={article.id}
-            className="rounded border border-slate-200 bg-white p-4"
-          >
-            <p className="text-xs text-slate-500">
-              {article.theme
-                ? article.feedTitle ?? article.theme
-                : article.feedTitle ?? article.feedUrl ?? '피드'}
-            </p>
+          <li key={article.id} className="h-full">
             <a
               href={article.link}
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-slate-900 hover:underline"
+              className="group block h-full rounded-xl bg-zinc-950 px-5 py-5 ring-1 ring-zinc-800 transition duration-200 hover:-translate-y-0.5 hover:bg-[#171c26] hover:ring-teal-400/80 hover:shadow-lg hover:shadow-black/40"
             >
-              {article.title}
+              <div className="flex items-baseline justify-between gap-3 text-[12px] text-zinc-300">
+                <p>
+                  {article.theme
+                    ? article.feedTitle ?? article.theme
+                    : article.feedTitle ?? article.feedUrl ?? '피드'}
+                </p>
+                <time dateTime={article.collectedAt}>
+                  {new Date(article.collectedAt).toLocaleString()}
+                </time>
+              </div>
+              <p className="mt-2 text-[17px] font-semibold leading-6 tracking-tight text-zinc-50 transition group-hover:text-teal-300">
+                {article.title}
+              </p>
+              <p className="mt-3 whitespace-pre-line text-[14px] leading-6 text-zinc-300">
+                {article.summary}
+              </p>
             </a>
-            <p className="mt-1 text-xs text-slate-400">
-              {new Date(article.collectedAt).toLocaleString()}
-            </p>
-            <p className="mt-3 whitespace-pre-line text-sm text-slate-700">
-              {article.summary}
-            </p>
           </li>
         ))}
       </ul>
 
       {history.data && history.data.total > 0 ? (
-        <div className="mt-6 flex items-center justify-between text-sm text-slate-600">
+        <div className="mt-6 flex items-center justify-between text-[13px] text-zinc-200">
           <button
             type="button"
             disabled={page <= 1}

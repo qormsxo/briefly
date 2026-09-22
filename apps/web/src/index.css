@@ -4,9 +4,14 @@
 
 body {
   margin: 0;
+  background: #0f1218;
+  color: #f4f4f5;
+  color-scheme: dark;
   font-family:
+    Pretendard,
     ui-sans-serif,
     system-ui,
     -apple-system,
     sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
