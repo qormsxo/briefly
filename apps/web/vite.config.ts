@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   const apiUrl =
     process.env.VITE_API_URL ||
     (mode === 'production'
-      ? 'https://feed-briefly.fly.dev'
+      ? 'https://feed-briefly.onrender.com'
       : 'http://localhost:3000');
 
   return {

@@ -2,6 +2,8 @@
 
 고른 뉴스 테마를 매일 수집하고, Gemini로 3줄 요약한 뒤 카카오톡 **나에게 보내기**로 아침 브리핑을 받는 개인용 뉴스 요약 서비스다.
 
+웹: https://feed-briefly.vercel.app
+
 ## 사용 방식
 
 1. 웹에서 카카오 로그인한다. `talk_message` 동의가 있어야 나에게 보내기가 동작한다.
@@ -17,7 +19,7 @@
 sequenceDiagram
   actor User
   participant Web as Vercel (apps/web)
-  participant API as Fly.io (apps/api)
+  participant API as Render (apps/api)
   participant Kakao as Kakao OAuth / Talk
   participant Gemini as Gemini API
   participant PG as Neon Postgres
