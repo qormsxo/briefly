@@ -4,16 +4,23 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { SESSION_COOKIE } from './auth/auth.constants';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { AppLogger } from './config/app-logger';
 import { parseOrigins } from './config/env.validation';
 import { nestLogLevels } from './config/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService);
-  app.useLogger(nestLogLevels(config.get('LOG_LEVEL')));
+  app.useLogger(
+    new AppLogger(
+      nestLogLevels(config.get('LOG_LEVEL')),
+      join(process.cwd(), 'logs', 'app.log'),
+    ),
+  );
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.use(helmet());
   app.use(cookieParser());
