@@ -27,12 +27,6 @@ export function AppLayout() {
             피드
           </Link>
           */}
-          <Link to="/themes" className="text-slate-600 hover:text-slate-900">
-            테마
-          </Link>
-          <Link to="/history" className="text-slate-600 hover:text-slate-900">
-            히스토리
-          </Link>
           <span className="text-slate-400">
             {auth.data?.nickname ?? '사용자'}
           </span>
