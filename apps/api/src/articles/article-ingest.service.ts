@@ -6,6 +6,8 @@ import {
   HtmlCrawlerService,
 } from '../crawl/html-crawler.service';
 import { TECH_THEME_ID } from '../crawl/news-themes';
+import { filterByKeywords } from '../crawl/keyword-filter';
+import { UserKeywordsService } from '../crawl/user-keywords.service';
 import { UserThemesService } from '../crawl/user-themes.service';
 import { FeedsService } from '../feeds/feeds.service';
 import { ArticleBrief, GeminiService } from '../gemini/gemini.service';
@@ -28,6 +30,7 @@ export class ArticleIngestService {
     private readonly articles: Repository<Article>,
     private readonly feeds: FeedsService,
     private readonly userThemes: UserThemesService,
+    private readonly userKeywords: UserKeywordsService,
     private readonly crawler: HtmlCrawlerService,
     private readonly rss: RssParserService,
     private readonly gemini: GeminiService,
@@ -113,6 +116,7 @@ export class ArticleIngestService {
     const seen = new Set<string>();
 
     for (const rows of rowsByUser.values()) {
+      const keywords = await this.userKeywords.listByUser(rows[0].userId);
       const quotas = briefsPerTheme(rows.length, MAX_BRIEFS_PER_USER);
       for (let index = 0; index < rows.length; index += 1) {
         const row = rows[index];
@@ -140,9 +144,14 @@ export class ArticleIngestService {
           }
         }
 
-        const picked = await this.pickInteresting(row.theme, fresh, room);
+        const matched = filterByKeywords(
+          fresh,
+          keywords.include,
+          keywords.exclude,
+        );
+        const picked = await this.pickInteresting(row.theme, matched, room);
         this.logger.log(
-          `뉴스 테마 수집 theme=${row.theme} candidates=${fresh.length} quota=${room} picked=${picked.length}`,
+          `뉴스 테마 수집 theme=${row.theme} candidates=${fresh.length} matched=${matched.length} quota=${room} picked=${picked.length}`,
         );
 
         for (const page of picked) {

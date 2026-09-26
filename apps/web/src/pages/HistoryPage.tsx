@@ -1,17 +1,30 @@
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ingestArticles, listArticles } from '../articles/api';
 import { ApiError } from '../lib/http';
 import { queryClient } from '../lib/query-client';
-import { listThemes, saveThemes } from '../themes/api';
+import {
+  listKeywords,
+  listThemes,
+  saveKeywords,
+  saveThemes,
+  type UserKeywords,
+} from '../themes/api';
 
 export function HistoryPage() {
   const [page, setPage] = useState(1);
   const themes = useQuery({ queryKey: ['themes'], queryFn: listThemes });
+  const keywords = useQuery({ queryKey: ['keywords'], queryFn: listKeywords });
   const saveMutation = useMutation({
     mutationFn: saveThemes,
     onSuccess: (data) => {
       queryClient.setQueryData(['themes'], data);
+    },
+  });
+  const keywordMutation = useMutation({
+    mutationFn: saveKeywords,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['keywords'], data);
     },
   });
   const ingestMutation = useMutation({
@@ -36,6 +49,17 @@ export function HistoryPage() {
       : saveMutation.isError
         ? '저장에 실패했습니다'
         : null;
+  const keywordError =
+    keywordMutation.error instanceof ApiError
+      ? keywordMutation.error.message
+      : keywordMutation.isError
+        ? '키워드 저장에 실패했습니다'
+        : null;
+  const keywordValue = keywords.data ?? { include: [], exclude: [] };
+
+  function changeKeywords(next: UserKeywords) {
+    keywordMutation.mutate(next);
+  }
 
   function toggle(id: string) {
     const next = new Set(selected);
@@ -78,6 +102,45 @@ export function HistoryPage() {
           {saveError ? (
             <p className="mt-3 text-sm text-red-400">{saveError}</p>
           ) : null}
+          <KeywordField
+            label="포함"
+            hint="포함할 키워드"
+            words={keywordValue.include}
+            disabled={keywords.isLoading || keywordMutation.isPending}
+            onAdd={(words) =>
+              changeKeywords({
+                include: [...keywordValue.include, ...words],
+                exclude: keywordValue.exclude,
+              })
+            }
+            onRemove={(word) =>
+              changeKeywords({
+                include: keywordValue.include.filter((item) => item !== word),
+                exclude: keywordValue.exclude,
+              })
+            }
+          />
+          <KeywordField
+            label="제외"
+            hint="제외할 키워드"
+            words={keywordValue.exclude}
+            disabled={keywords.isLoading || keywordMutation.isPending}
+            onAdd={(words) =>
+              changeKeywords({
+                include: keywordValue.include,
+                exclude: [...keywordValue.exclude, ...words],
+              })
+            }
+            onRemove={(word) =>
+              changeKeywords({
+                include: keywordValue.include,
+                exclude: keywordValue.exclude.filter((item) => item !== word),
+              })
+            }
+          />
+          {keywordError ? (
+            <p className="mt-3 text-sm text-red-400">{keywordError}</p>
+          ) : null}
           {selected.size === 0 && themes.data ? (
             <p className="mt-3 text-[13px] text-zinc-300">
               분야를 하나 이상 고르면 그 뉴스를 모읍니다.
@@ -95,7 +158,11 @@ export function HistoryPage() {
       </div>
 
       {ingestMutation.isPending ? (
-        <p className="mt-6 text-sm text-zinc-300">
+        <p className="mt-6 flex items-center gap-2.5 text-sm text-zinc-300">
+          <span
+            aria-hidden
+            className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-zinc-600 border-t-teal-400"
+          />
           요약이 끝나는 대로 아래에 추가됩니다. 끝나면 카카오톡으로도 보냅니다.
         </p>
       ) : null}
@@ -167,5 +234,60 @@ export function HistoryPage() {
         </div>
       ) : null}
     </section>
+  );
+}
+
+function KeywordField({
+  label,
+  hint,
+  words,
+  disabled,
+  onAdd,
+  onRemove,
+}: {
+  label: string;
+  hint: string;
+  words: string[];
+  disabled: boolean;
+  onAdd: (words: string[]) => void;
+  onRemove: (word: string) => void;
+}) {
+  const [draft, setDraft] = useState('');
+
+  function commit(event?: FormEvent) {
+    event?.preventDefault();
+    const next = draft
+      .split(/[,，]/)
+      .map((word) => word.trim())
+      .filter(Boolean);
+    if (next.length === 0) {
+      return;
+    }
+    onAdd(next);
+    setDraft('');
+  }
+
+  return (
+    <form className="mt-3 flex flex-wrap items-center gap-2" onSubmit={commit}>
+      <span className="text-[12px] text-zinc-300">{label}</span>
+      {words.map((word) => (
+        <button
+          key={word}
+          type="button"
+          disabled={disabled}
+          className="rounded-lg bg-zinc-900 px-2 py-1 text-[13px] text-zinc-100 ring-1 ring-zinc-700 disabled:opacity-60"
+          onClick={() => onRemove(word)}
+        >
+          {word} ×
+        </button>
+      ))}
+      <input
+        value={draft}
+        disabled={disabled}
+        placeholder={hint}
+        className="h-8 w-40 rounded-lg bg-zinc-900 px-2.5 text-[13px] text-zinc-100 ring-1 ring-zinc-700 outline-none placeholder:text-zinc-400 disabled:opacity-60"
+        onChange={(event) => setDraft(event.target.value)}
+      />
+    </form>
   );
 }

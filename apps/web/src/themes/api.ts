@@ -20,3 +20,19 @@ export function saveThemes(themeIds: string[]) {
     body: JSON.stringify({ themeIds }),
   });
 }
+
+export type UserKeywords = {
+  include: string[];
+  exclude: string[];
+};
+
+export function listKeywords() {
+  return http<UserKeywords>('/api/keywords');
+}
+
+export function saveKeywords(keywords: UserKeywords) {
+  return http<UserKeywords>('/api/keywords', {
+    method: 'PUT',
+    body: JSON.stringify(keywords),
+  });
+}

@@ -108,8 +108,3 @@ pnpm dev:web
 ```bash
 pnpm --filter @feed-briefly/api test
 ```
-
-## 다음에
-
-1. **수신 시간 설정** — 지금은 GitHub Actions 크론(`daily-digest.yml`, UTC 22:00 / KST 07:00)에 고정이다. 사이트에서 `지금 수집`으로 바로 받는 것 외에, 사용자가 카카오톡을 받을 시각을 직접 정하게 한다.
-2. ~~테마 크롤링~~ — `/themes`에서 정치·경제·사회 등 분야를 고르면 네이버·다음 뉴스에서 글을 찾아 요약한다.
